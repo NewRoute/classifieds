@@ -140,7 +140,7 @@ function adDetail($ad_id='')
         '/\n/',
     );
     $replacements = array(
-        '<br ' . XHTML . '>',
+        '<br />',
     );
     $ad['descript'] = PLG_replaceTags(COM_checkHTML($ad['descript']));
     $ad['descript'] = preg_replace($patterns,$replacements,$ad['descript']);
@@ -245,10 +245,18 @@ USES_classifieds_class_category();
     $detail->set_var('have_photo', '');     // assume no photo available
     if ($photo && DB_numRows($photo) >= 1) {
         while ($prow = DB_fetchArray($photo)) {
-            if ($prow['filename'] != '' && file_exists("{$_CONF_ADVT['image_dir']}/{$prow['filename']}")) {
+            $img_small = LGLIB_ImageUrl(
+                    CLASSIFIEDS_IMGPATH . '/' . $prow['filename'],
+                    $_CONF_ADVT['detail_img_width']
+            );
+            $img_disp = CLASSIFIEDS_dispUrl($prow['filename']);
+            if (!empty($img_small)) {
                 $detail->set_block('detail', 'PhotoBlock', 'PBlock');
-                $detail->set_var('ph_file', $prow['filename']);
-                $detail->set_var('img_url', $_CONF_ADVT['image_url']);
+                $detail->set_var(array(
+                    'tn_width'  => $_CONF_ADVT['detail_img_width'],
+                    'small_url' => $img_small,
+                    'disp_url' => $img_disp,
+                ) );
                 $detail->parse('PBlock', 'PhotoBlock', true);
                 $detail->set_var('have_photo', 'true');
             }
@@ -276,14 +284,21 @@ USES_classifieds_class_category();
     // Show the "hot results"
     $hot_data = '';
     if ($hotresult) {
+        $detail->set_block('detail', 'HotBlock', 'HBlock');
         while ($hotrow = DB_fetchArray($hotresult)) {
-            $hot_data .= "<tr><td><small><a href=\"" .
+            $detail->set_var(array(
+                'hot_title' => $hotrow['subject'],
+                'hot_url'   => CLASSIFIEDS_makeURL('detail', $hotrow['ad_id']),
+                'hot_cat'   => displayCat($hotrow['cat_id']),
+            ) );
+            /*$hot_data .= "<tr><td class=\"hottitle\"><a href=\"" .
                 CLASSIFIEDS_makeURL('detail', $hotrow['ad_id']) .
                 "\">{$hotrow['subject']}</a></small></td>\n";
 
-            $hot_data .= "<td>( " . displayCat($hotrow['cat_id']) . 
-                        " )</td></tr>\n";
+            $hot_data .= "<td class=\"hotcat\">( " . displayCat($hotrow['cat_id']) . 
+                        " )</td></tr>\n";*/
         }
+        $detail->parse('HBlock', 'HotBlock', true);
     }
 
     $detail->set_var('whats_hot_row', $hot_data);

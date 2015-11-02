@@ -470,7 +470,7 @@ function displayCat($cat_id)
 //        displayCat($row['papa_id']);
     }
 
-    return "<small>$location</small>\n";
+    return "<span class=\"adDisplayCat\">$location</span>\n";
 
 }   // function displayCat()
 
@@ -921,7 +921,6 @@ function adSave($savetype='edit')
         }
     }
 
-    //$errmsg .= CLASSIFIEDS_UploadPhoto($A['ad_id'], $_FILES['photo']);
     $errmsg .= CLASSIFIEDS_UploadPhoto($A['ad_id'], 'photo');
     if ($errmsg != '') {
         // Display the real error message, if there is one
